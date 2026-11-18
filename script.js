@@ -4,6 +4,8 @@ const byId = id => document.getElementById(id);
 const fields = ['sender', 'recipient', 'number', 'date', 'currency', 'discount', 'vat', 'comment'];
 const itemFields = [['name', 'Название'], ['quantity', 'Количество'], ['unit', 'Единица'], ['price', 'Цена']];
 let nextRowId = 0;
+let restoring = true;
+const storageKey = 'smeta-v1';
 
 function today() {
   const now = new Date();
@@ -91,6 +93,84 @@ function update() {
   byId('vat-label').textContent = `НДС (${totals.vatRate}%)`;
   byId('discount-line').hidden = totals.discount === 0;
   byId('vat-line').hidden = totals.vat === 0;
+  if (!restoring) save();
+}
+
+function save() {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({ ...Object.fromEntries(fields.map(key => [key, byId(key).value])), items: readItems() }));
+    byId('save-status').textContent = 'Смета сохранена в этом браузере.';
+  } catch {
+    byId('save-status').textContent = 'Браузер не разрешил сохранение. Сохраните смету в PDF или скопируйте текст перед закрытием.';
+  }
+}
+
+function restore() {
+  let data = null;
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) {
+      data = JSON.parse(raw);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) throw Error('Invalid data');
+    }
+  } catch {
+    byId('save-status').textContent = 'Не удалось прочитать сохранённую смету. Проверьте доступ к хранилищу браузера.';
+  }
+  fields.forEach(key => { if (typeof data?.[key] === 'string') byId(key).value = data[key]; });
+  if (!['₸', '₽', '$', '€'].includes(byId('currency').value)) byId('currency').value = '₸';
+  const items = Array.isArray(data?.items) ? data.items.filter(item => item && typeof item === 'object') : [{}];
+  items.forEach(item => addRow(Object.fromEntries(itemFields.map(([key]) => [key, typeof item[key] === 'string' ? item[key] : undefined]))));
+  restoring = false;
+  update();
+}
+
+function newEstimate() {
+  if (!window.confirm('Создать новую смету? Текущая смета будет заменена. Сначала сохраните её в PDF или скопируйте текст.')) return;
+  const previousNumber = byId('number').value;
+  const suffix = previousNumber.match(/\d+$/);
+  const number = suffix ? previousNumber.slice(0, suffix.index) + String(BigInt(suffix[0]) + 1n).padStart(suffix[0].length, '0') : '1';
+  restoring = true;
+  fields.forEach(key => { byId(key).value = ''; });
+  byId('number').value = number;
+  byId('date').value = today();
+  byId('currency').value = '₸';
+  byId('discount').value = '0';
+  byId('vat').value = '0';
+  byId('items').replaceChildren();
+  byId('copy-status').textContent = '';
+  byId('print-document').replaceChildren();
+  addRow();
+  restoring = false;
+  update();
+  byId('recipient').focus();
+}
+
+function fullText() {
+  const totals = calculate();
+  const lines = [`Смета № ${byId('number').value || '—'}`, `Дата: ${displayDate()}`, `От кого: ${byId('sender').value || '—'}`, `Для кого: ${byId('recipient').value || '—'}`, '', 'Позиции:'];
+  readItems().forEach((item, index) => lines.push(`${index + 1}. ${item.name || '—'}\n${numeric(item.quantity)} ${item.unit || '—'} × ${money(numeric(item.price))} = ${money(totals.sums[index])}`));
+  lines.push('', `Сумма позиций: ${money(totals.subtotal)}`);
+  if (totals.discount) lines.push(`Скидка (${totals.discountRate}%): −${money(totals.discount)}`);
+  if (totals.vat) lines.push(`НДС (${totals.vatRate}%): ${money(totals.vat)}`);
+  lines.push(`Итого: ${money(totals.total)}`);
+  if (byId('comment').value.trim()) lines.push('', `Комментарий:\n${byId('comment').value}`);
+  lines.push('', 'Подпись: ____________________');
+  return lines.join('\n');
+}
+
+async function copyText() {
+  const text = fullText();
+  try {
+    if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
+    await navigator.clipboard.writeText(text);
+    byId('copy-status').textContent = 'Полный текст скопирован. Вставьте его в WhatsApp.';
+  } catch {
+    byId('copy-text').value = text;
+    byId('copy-dialog').showModal();
+    byId('copy-text').focus();
+    byId('copy-text').select();
+    byId('copy-status').textContent = 'Автоматическое копирование недоступно. Скопируйте выделенный текст вручную.';
+  }
 }
 
 function displayDate() {
@@ -134,9 +214,12 @@ function buildPrintDocument() {
 }
 
 byId('print').addEventListener('click', () => { buildPrintDocument(); window.print(); });
+byId('copy').addEventListener('click', copyText);
+byId('close-copy').addEventListener('click', () => byId('copy-dialog').close());
+byId('new').addEventListener('click', newEstimate);
 window.addEventListener('beforeprint', buildPrintDocument);
 byId('date').value = today();
 byId('add').addEventListener('click', () => addRow({}, true));
 document.addEventListener('input', update);
 document.addEventListener('change', update);
-addRow();
+restore();

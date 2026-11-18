@@ -39,7 +39,19 @@
       <h2 id="comment-heading">Комментарий</h2>
       <label>Условия и примечания<textarea id="comment" rows="4" placeholder="Сроки, порядок оплаты и другие условия"></textarea></label>
     </section>
-    <button id="print" class="primary" type="button">Сохранить PDF / Печать</button>
+    <div class="actions">
+      <button id="print" class="primary" type="button">Сохранить PDF / Печать</button>
+      <button id="copy" type="button">Копировать для WhatsApp</button>
+      <button id="new" type="button">Новая смета</button>
+    </div>
+    <p id="save-status" class="hint" role="status"></p>
+    <p id="copy-status" class="hint" role="status"></p>
+    <dialog id="copy-dialog" aria-labelledby="copy-heading">
+      <h2 id="copy-heading">Скопируйте текст вручную</h2>
+      <label>Полный текст сметы<textarea id="copy-text" rows="12" readonly></textarea></label>
+      <p class="hint">Нажмите Ctrl+C или удерживайте текст и выберите «Копировать».</p>
+      <button id="close-copy" type="button">Закрыть</button>
+    </dialog>
     <p class="hint">В окне печати выберите «Сохранить как PDF», формат A4 и отключите колонтитулы браузера.</p>
   </main>
   <article id="print-document" aria-label="Смета для печати"></article>
