@@ -1,0 +1,42 @@
+:root { font-family: Arial, sans-serif; color: #182c36; background: #f2f5f6; line-height: 1.5; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1120px; padding: 32px 24px 64px; margin: auto; }
+header { margin-bottom: 28px; }
+h1 { font-size: clamp(28px, 5vw, 40px); margin: 8px 0; line-height: 1.2; }
+h2 { font-size: 21px; margin: 0 0 20px; }
+p { margin: 8px 0; }
+.eyebrow { color: #27685e; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
+.card { background: white; border: 1px solid #dbe3e6; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: bold; min-width: 0; }
+input, textarea, select, button { font: inherit; min-height: 44px; min-width: 44px; border: 1px solid #94a8b0; border-radius: 8px; padding: 10px 12px; }
+input, textarea, select { width: 100%; background: white; color: #182c36; }
+textarea { resize: vertical; }
+button { cursor: pointer; background: #eaf3f0; color: #174f44; font-weight: bold; }
+button:hover { background: #d6e9e3; }
+:focus-visible { outline: 3px solid #087c70; outline-offset: 3px; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 16px; }
+th { font-size: 13px; text-align: left; color: #4c626c; }
+td, th { padding: 8px 5px; overflow-wrap: anywhere; }
+th:first-child { width: 30%; }
+th:last-child { width: 100px; }
+td input { padding: 10px 8px; }
+.row-sum { font-weight: bold; }
+.delete { color: #943e35; background: #fff4f2; font-size: 13px; }
+.grand-total { display: flex; justify-content: space-between; gap: 16px; font-size: 24px; font-weight: bold; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+[hidden] { display: none !important; }
+@media (max-width: 700px) {
+  main { padding: 24px 14px 40px; }
+  .card { padding: 18px; }
+  .grid { grid-template-columns: 1fr; }
+  table, tbody { display: block; }
+  thead { display: none; }
+  tr { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 0; border-bottom: 1px solid #dbe3e6; }
+  td { display: block; padding: 0; min-width: 0; }
+  td::before { content: attr(data-label); display: block; font-size: 13px; margin-bottom: 4px; color: #4c626c; }
+  td:first-child { grid-column: 1 / -1; }
+  .delete { width: 100%; }
+  .grand-total { font-size: 21px; flex-wrap: wrap; }
+}
