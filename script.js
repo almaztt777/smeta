@@ -6,6 +6,7 @@ const itemFields = [['name', 'Название'], ['quantity', 'Количест
 let nextRowId = 0;
 let restoring = true;
 const storageKey = 'smeta-v1';
+const senderKey = 'smeta-sender-v1';
 
 function today() {
   const now = new Date();
@@ -99,6 +100,7 @@ function update() {
 function save() {
   try {
     localStorage.setItem(storageKey, JSON.stringify({ ...Object.fromEntries(fields.map(key => [key, byId(key).value])), items: readItems() }));
+    localStorage.setItem(senderKey, byId('sender').value);
     byId('save-status').textContent = 'Смета сохранена в этом браузере.';
   } catch {
     byId('save-status').textContent = 'Браузер не разрешил сохранение. Сохраните смету в PDF или скопируйте текст перед закрытием.';
@@ -117,6 +119,10 @@ function restore() {
     byId('save-status').textContent = 'Не удалось прочитать сохранённую смету. Проверьте доступ к хранилищу браузера.';
   }
   fields.forEach(key => { if (typeof data?.[key] === 'string') byId(key).value = data[key]; });
+  try {
+    const sender = localStorage.getItem(senderKey);
+    if (sender !== null) byId('sender').value = sender;
+  } catch { /* Общий статус сохранения обновится после загрузки. */ }
   if (!['₸', '₽', '$', '€'].includes(byId('currency').value)) byId('currency').value = '₸';
   const items = Array.isArray(data?.items) ? data.items.filter(item => item && typeof item === 'object') : [{}];
   items.forEach(item => addRow(Object.fromEntries(itemFields.map(([key]) => [key, typeof item[key] === 'string' ? item[key] : undefined]))));
@@ -127,10 +133,12 @@ function restore() {
 function newEstimate() {
   if (!window.confirm('Создать новую смету? Текущая смета будет заменена. Сначала сохраните её в PDF или скопируйте текст.')) return;
   const previousNumber = byId('number').value;
+  const sender = byId('sender').value;
   const suffix = previousNumber.match(/\d+$/);
   const number = suffix ? previousNumber.slice(0, suffix.index) + String(BigInt(suffix[0]) + 1n).padStart(suffix[0].length, '0') : '1';
   restoring = true;
   fields.forEach(key => { byId(key).value = ''; });
+  byId('sender').value = sender;
   byId('number').value = number;
   byId('date').value = today();
   byId('currency').value = '₸';
