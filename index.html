@@ -35,6 +35,13 @@
       <p class="summary-line" id="vat-line" hidden><span id="vat-label">НДС</span><output id="vat-amount"></output></p>
       <p class="grand-total">Итого <output id="total" aria-live="polite">0 ₸</output></p>
     </section>
+    <section class="card" aria-labelledby="comment-heading">
+      <h2 id="comment-heading">Комментарий</h2>
+      <label>Условия и примечания<textarea id="comment" rows="4" placeholder="Сроки, порядок оплаты и другие условия"></textarea></label>
+    </section>
+    <button id="print" class="primary" type="button">Сохранить PDF / Печать</button>
+    <p class="hint">В окне печати выберите «Сохранить как PDF», формат A4 и отключите колонтитулы браузера.</p>
   </main>
+  <article id="print-document" aria-label="Смета для печати"></article>
 </body>
 </html>

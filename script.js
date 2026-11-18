@@ -1,7 +1,7 @@
 'use strict';
 
 const byId = id => document.getElementById(id);
-const fields = ['sender', 'recipient', 'number', 'date', 'currency', 'discount', 'vat'];
+const fields = ['sender', 'recipient', 'number', 'date', 'currency', 'discount', 'vat', 'comment'];
 const itemFields = [['name', 'Название'], ['quantity', 'Количество'], ['unit', 'Единица'], ['price', 'Цена']];
 let nextRowId = 0;
 
@@ -93,6 +93,48 @@ function update() {
   byId('vat-line').hidden = totals.vat === 0;
 }
 
+function displayDate() {
+  const value = byId('date').value;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value.split('-').reverse().join('.') : '—';
+}
+
+function buildPrintDocument() {
+  const target = byId('print-document');
+  target.replaceChildren();
+  const append = (tag, text, parent = target) => {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    parent.append(element);
+    return element;
+  };
+  append('h1', `Смета № ${byId('number').value || '—'}`);
+  append('p', `Дата: ${displayDate()}`);
+  append('p', `От кого: ${byId('sender').value || '—'}`);
+  append('p', `Для кого: ${byId('recipient').value || '—'}`);
+  const table = append('table', '');
+  const header = append('tr', '', append('thead', '', table));
+  ['Название', 'Количество', 'Единица', 'Цена', 'Сумма'].forEach(text => append('th', text, header));
+  const body = append('tbody', '', table);
+  const totals = calculate();
+  readItems().forEach((item, index) => {
+    const row = append('tr', '', body);
+    [item.name || '—', numeric(item.quantity), item.unit || '—', money(numeric(item.price)), money(totals.sums[index])].forEach(text => append('td', text, row));
+  });
+  const summary = append('div', '');
+  summary.className = 'print-totals';
+  append('p', `Сумма позиций: ${money(totals.subtotal)}`, summary);
+  if (totals.discount) append('p', `Скидка (${totals.discountRate}%): −${money(totals.discount)}`, summary);
+  if (totals.vat) append('p', `НДС (${totals.vatRate}%): ${money(totals.vat)}`, summary);
+  append('h2', `Итого: ${money(totals.total)}`, summary);
+  if (byId('comment').value.trim()) {
+    append('h2', 'Комментарий');
+    append('p', byId('comment').value);
+  }
+  append('p', 'Подпись: ____________________').className = 'signature';
+}
+
+byId('print').addEventListener('click', () => { buildPrintDocument(); window.print(); });
+window.addEventListener('beforeprint', buildPrintDocument);
 byId('date').value = today();
 byId('add').addEventListener('click', () => addRow({}, true));
 document.addEventListener('input', update);

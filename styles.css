@@ -29,6 +29,29 @@ td input { padding: 10px 8px; }
 .adjustments { grid-template-columns: repeat(3, 1fr); margin-bottom: 24px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 [hidden] { display: none !important; }
+.primary { background: #176756; color: white; }
+.primary:hover { background: #105342; }
+.hint { font-size: 14px; color: #4c626c; }
+#print-document { display: none; }
+@page { size: A4; margin: 16mm; }
+@media print {
+  :root { background: white; color: black; font-size: 11pt; }
+  body > main { display: none !important; }
+  #print-document { display: block; }
+  #print-document h1 { font-size: 22pt; }
+  #print-document table { display: table; table-layout: fixed; }
+  #print-document thead { display: table-header-group; }
+  #print-document tbody { display: table-row-group; }
+  #print-document tr { display: table-row; break-inside: avoid; }
+  #print-document td, #print-document th { display: table-cell; border: 1px solid #999; padding: 6px; width: auto; color: black; }
+  #print-document td::before { display: none; }
+  #print-document th:first-child { width: 34%; }
+  #print-document th:last-child { width: 22%; }
+  #print-document p { white-space: pre-wrap; overflow-wrap: anywhere; }
+  #print-document h2 { margin-top: 20px; break-after: avoid; }
+  .print-totals, .signature { break-inside: avoid; }
+  .signature { margin-top: 28px; }
+}
 @media (max-width: 700px) {
   main { padding: 24px 14px 40px; }
   .card { padding: 18px; }
