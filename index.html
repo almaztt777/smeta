@@ -24,7 +24,17 @@
       <table><thead><tr><th>Название</th><th>Количество</th><th>Единица</th><th>Цена</th><th>Сумма</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody id="items"></tbody></table>
       <button id="add" type="button">+ Добавить позицию</button>
     </section>
-    <section class="card totals" aria-label="?????"><p class="grand-total">????? <output id="total" aria-live="polite">0 ?</output></p></section>
+    <section class="card totals" aria-label="Итоги">
+      <div class="grid adjustments">
+        <label>Валюта<select id="currency"><option>₸</option><option>₽</option><option>$</option><option>€</option></select></label>
+        <label>Скидка, %<input id="discount" inputmode="decimal" value="0"></label>
+        <label>НДС после скидки, %<input id="vat" inputmode="decimal" value="0"></label>
+      </div>
+      <p class="summary-line">Сумма позиций <output id="subtotal"></output></p>
+      <p class="summary-line" id="discount-line" hidden><span id="discount-label">Скидка</span><output id="discount-amount"></output></p>
+      <p class="summary-line" id="vat-line" hidden><span id="vat-label">НДС</span><output id="vat-amount"></output></p>
+      <p class="grand-total">Итого <output id="total" aria-live="polite">0 ₸</output></p>
+    </section>
   </main>
 </body>
 </html>

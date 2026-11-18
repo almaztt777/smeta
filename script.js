@@ -1,7 +1,7 @@
 'use strict';
 
 const byId = id => document.getElementById(id);
-const fields = ['sender', 'recipient', 'number', 'date'];
+const fields = ['sender', 'recipient', 'number', 'date', 'currency', 'discount', 'vat'];
 const itemFields = [['name', 'Название'], ['quantity', 'Количество'], ['unit', 'Единица'], ['price', 'Цена']];
 let nextRowId = 0;
 
@@ -22,7 +22,7 @@ function round(value) {
 }
 
 function money(value) {
-  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(round(value)).replace(/\u00a0|\u202f/g, ' ')} ?`;
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(round(value)).replace(/\u00a0|\u202f/g, ' ')} ${byId('currency').value}`;
 }
 
 function addRow(data = {}, focus = false) {
@@ -72,17 +72,29 @@ function readItems() {
 function calculate(items = readItems()) {
   const sums = items.map(item => round(numeric(item.quantity) * numeric(item.price)));
   const subtotal = round(sums.reduce((sum, value) => sum + value, 0));
-  return { sums, subtotal, total: subtotal };
+  const discountRate = Math.min(100, numeric(byId('discount').value));
+  const vatRate = Math.min(100, numeric(byId('vat').value));
+  const discount = round(subtotal * discountRate / 100);
+  const afterDiscount = round(subtotal - discount);
+  const vat = round(afterDiscount * vatRate / 100);
+  return { sums, subtotal, discountRate, vatRate, discount, vat, total: round(afterDiscount + vat) };
 }
 
 function update() {
   const totals = calculate();
   Array.from(byId('items').rows).forEach((row, index) => { row.querySelector('.row-sum').textContent = money(totals.sums[index]); });
   byId('total').textContent = money(totals.total);
-
+  byId('subtotal').textContent = money(totals.subtotal);
+  byId('discount-amount').textContent = `−${money(totals.discount)}`;
+  byId('vat-amount').textContent = money(totals.vat);
+  byId('discount-label').textContent = `Скидка (${totals.discountRate}%)`;
+  byId('vat-label').textContent = `НДС (${totals.vatRate}%)`;
+  byId('discount-line').hidden = totals.discount === 0;
+  byId('vat-line').hidden = totals.vat === 0;
 }
 
 byId('date').value = today();
 byId('add').addEventListener('click', () => addRow({}, true));
 document.addEventListener('input', update);
+document.addEventListener('change', update);
 addRow();
